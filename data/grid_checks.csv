@@ -1,0 +1,17 @@
+place,county,grid_easting,grid_northing,lat,lon,os_name,os_type,offset_m
+Ashford,Kent,600800.0,142800.0,51.14923,0.86965,Ashford,Town,133.0
+Appledore,Kent,595600.0,129300.0,51.02978,0.78809,Appledore,Village,76.0
+York,Yorkshire,460300.0,451200.0,53.95339,-1.08261,York,City,962.0
+Stamford,Lincolnshire,502800.0,307100.0,52.6519,-0.48182,Stamford,Town,56.0
+Ludlow,Shropshire,351200.0,274600.0,52.36726,-2.71813,Ludlow,Town,73.0
+Boston,Lincolnshire,532600.0,344200.0,52.97875,-0.02652,Boston,Town,273.0
+Totnes,Devon,280200.0,60500.0,50.43209,-3.68814,Totnes,Town,110.0
+Kendal,Westmorland,352000.0,493000.0,54.3303,-2.73961,Kendal,Town,505.0
+Helston,Cornwall,165800.0,27700.0,50.10311,-5.27646,Helston,Town,281.0
+Berwick upon Tweed,Northumberland,400200.0,652800.0,55.76854,-1.99838,Berwick-upon-Tweed,Town,470.0
+Cardiff,Wales,318100.0,176600.0,51.4824,-3.18082,Cardiff,City,383.0
+St Ives,Huntingdonshire,531400.0,271200.0,52.32318,-0.07343,St Ives,Town,101.0
+Thaxted,Essex,561000.0,231000.0,51.95419,0.3415,Thaxted,Town,164.0
+Chipping Campden,Gloucestershire,415500.0,239500.0,52.05367,-1.77537,Chipping Campden,Town,580.0
+Shepton Mallet,Somerset,362000.0,143600.0,51.19035,-2.54514,Shepton Mallet,Town,164.0
+Bishop's Stortford,Hertfordshire,548600.0,221300.0,51.87049,0.15701,Bishop's Stortford,Town,247.0
