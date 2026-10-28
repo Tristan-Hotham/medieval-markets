@@ -1,0 +1,161 @@
+<!-- wp:paragraph -->
+<p><em>Between the Norman Conquest and 1516, English kings licensed markets in their thousands, each one a bet that a village would become a town. I followed all {{counts.market_places|int}} medieval market places in England and Wales to today. Fewer than a third are towns. Most are villages, and a few are fields or sea.</em></p>
+<!-- /wp:paragraph -->
+
+<!-- wp:buttons -->
+<div class="wp-block-buttons"><!-- wp:button -->
+<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="https://tristan-hotham.github.io/medieval-markets/">Explore the interactive version</a></div>
+<!-- /wp:button -->
+
+<!-- wp:button -->
+<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="https://doi.org/10.5281/zenodo.23727144">Read the paper</a></div>
+<!-- /wp:button --></div>
+<!-- /wp:buttons -->
+
+<!-- wp:paragraph -->
+<p>In {{examples.Ravenserodd.first|raw}} a market was granted at Ravenserodd, a port on the sandbanks at the mouth of the Humber. It was a borough, with {{examples.Ravenserodd.markets|words}} markets and a fair on record. The sea took it in the fourteenth century, and today there is no named settlement within 1.5 km of where it stood.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Ravenserodd is the dramatic case. The ordinary case is quieter: a village with a church, a pub and a charter in the rolls saying that, seven or eight hundred years ago, its lord was allowed to hold a market there every Tuesday. Most of England's medieval markets ended up like that. This post is about how many, and why some places made it when others did not.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>My source is Samantha Letters's Online Gazetteer of Markets and Fairs in England and Wales to 1516, a superb piece of scholarship that lists, county by county, every market and fair with evidence before 1516. I turned it into numbers: {{counts.places|int}} places, {{counts.markets|int}} markets and {{counts.fairs|int}} fairs, each place with a grid reference, the kind of evidence (royal charter, other grant, or custom) and the first year a market is recorded. Then I looked every place up on today's map. This is the third of my "is it destiny?" studies, after <a href="https://tristan-hotham.github.io/domesday-destiny/">Domesday Destiny</a> and <a href="https://tristan-hotham.github.io/saxon-mints/">Minted</a>.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">A boom, then the Black Death</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>The Gazetteer records {{counts.market_lines_granted|int}} royal grants of a market, {{counts.market_lines_charter|int}} of them by charter. {{grants.share_1200_1349|pct0}} fall between 1200 and 1348. The busiest decade was the {{grants.peak_decade|raw}}s, with {{grants.peak_n|int}} market grants. Then plague arrived in 1348, and the boom ended almost overnight: {{grants.d1340s|int}} grants in the 1340s, {{grants.d1350s|int}} in the 1350s, and an average of under ten a decade for the rest of the period.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:image {"sizeSlug":"full"} -->
+<figure class="wp-block-image size-full">{{IMG|b_decades.png|Bar chart of royal market and fair grants per decade from the 1060s to the 1510s. Grants are rare before 1200, rise steeply to a peak of {{grants.peak_n|int}} market grants in the 1250s, stay high to the 1340s, and collapse after a dashed line marking the Black Death in 1348.|Royal grants of markets (dark) and fairs (pale) per decade. Source: my counts from the Gazetteer of Markets and Fairs to 1516.}}</figure>
+<!-- /wp:image -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">What they are now</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>To find out what each place is today I matched it to Ordnance Survey's open gazetteer of place names, which classes every settlement as a city, town, village, hamlet or suburb, and checked the borderline cases against Census 2021 built-up areas. Of {{counts.market_places|int}} market places, {{outcomes.town.n|int}} ({{outcomes.town.share|pct0}}) are towns or cities. Another {{outcomes.absorbed.n|int}} have been swallowed by a bigger town, like Croydon or Kingston upon Thames in London. {{outcomes.village.n|int}} ({{outcomes.village.share|pct0}}) are villages, {{outcomes.hamlet.n|int}} are hamlets and {{outcomes.gone.n|int}} have gone from the map altogether.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:image {"sizeSlug":"full"} -->
+<figure class="wp-block-image size-full">{{IMG|b_map.png|Map of England and Wales covered in about two thousand dots. Dark red dots for places that are towns today are spread fairly evenly; ochre dots for villages are thickest in East Anglia, Lincolnshire and the south; open rings mark places that have gone from the map.|Every medieval market place in the Gazetteer, coloured by what it is today.}}</figure>
+<!-- /wp:image -->
+
+<!-- wp:paragraph -->
+<p>When a place got its market mattered a lot. Places with a market by custom, usually old Anglo-Saxon or Norman boroughs, did best: {{period.prescriptive.town_share|pct0}} are towns today. For places whose first market was a royal grant, the odds fall with every half century: {{period.1200 to 1249.town_share|pct0}} for grants in 1200 to 1249, {{period.1250 to 1299.town_share|pct0}} in 1250 to 1299 and just {{period.1300 to 1348.town_share|pct0}} in 1300 to 1348.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:image {"sizeSlug":"full"} -->
+<figure class="wp-block-image size-full">{{IMG|b_period.png|Horizontal bar chart. {{period.prescriptive.town_share|pct0}} of markets held by custom are towns today; for first grants the share falls from {{period.before 1200.town_share|pct0}} before 1200 to {{period.1300 to 1348.town_share|pct0}} in 1300 to 1348.|Share of market places that are towns today, by how their market began.}}</figure>
+<!-- /wp:image -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">A third of a day's walk</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Why did the late markets fail? Mostly because they were squeezed in. The thirteenth-century law book known as Bracton says a reasonable day's journey is twenty miles, split into three: the morning to walk to market, the middle to buy and sell, and the evening to walk home. A new market within a third of that, six and two-thirds miles or about {{spacing.bracton_km|km1}} km, could be challenged as a nuisance by an older one.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The rule did not stop the Crown. Of {{spacing.granted_n|int}} places whose first market was a grant, {{spacing.granted_close_share|pct0}} lay within {{spacing.bracton_km|km1}} km of a market already on record; the median gap was {{spacing.granted_median_earlier_km|km1}} km. But the squeezed-in markets rarely grew: {{spacing.close_town|pct0}} are towns today, against {{spacing.far_town|pct0}} of the ones with room around them.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:image {"sizeSlug":"full"} -->
+<figure class="wp-block-image size-full">{{IMG|b_bracton.png|Bar chart of the share of granted market places that are towns today by distance to the nearest older market. Under 10.7 km the shares are 9 to 25 per cent; beyond Bracton's limit they are 35 to 44 per cent.|Places whose first market was a royal grant: share that are towns today, by distance to the nearest older market. Dashed line: Bracton's six and two-thirds miles.}}</figure>
+<!-- /wp:image -->
+
+<!-- wp:pullquote -->
+<figure class="wp-block-pullquote"><blockquote><p>A market charter was a licence to try, not a promise. The winners were mostly the places that were already central before the boom began.</p></blockquote></figure>
+<!-- /wp:pullquote -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">What made a winner</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Put everything into one model and a clear picture emerges. Being a borough multiplies the odds of being a town today by about {{or_all.borough.odds_ratio|f1}}. A mint, a market by custom, a fair, a major river within a kilometre and a Roman road all help too. An older market within Bracton's distance roughly halves the odds. Size in Domesday Book helps only at the very top: {{domesday_bands.4.town_share|pct0}} of market places with 100 or more households in 1086 are towns today, but below that size made little difference.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:image {"sizeSlug":"full"} -->
+<figure class="wp-block-image size-full">{{IMG|b_forest.png|Dot-and-line chart of odds ratios on a log scale. Borough, mint, prescriptive market, a fair, a major river, a Roman road and two or more markets are all to the right of 1; an older market within 10.7 km is to the left; the coast, a late grant and Wales overlap 1.|Odds ratios for being a town today, from a logistic regression on {{model_all.n|int}} market places. Filled dots: the 95% interval excludes 1.}}</figure>
+<!-- /wp:image -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">Decided by 1600</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>The Gazetteer also flags the places on Alan Everitt's list of market towns around 1600, which gives a halfway check. {{everitt.n|int}} medieval market places were still market towns then, and {{everitt.town_share|pct0}} of them are towns today. Of the {{everitt.not_n|int}} that had already dropped out, only {{everitt.not_town_share|pct0}} are. Most of the sorting had happened by the time of Elizabeth I. A few fell later: Lavenham in Suffolk, a market town around 1600, is a village of {{examples.Lavenham.pop|int}} people now.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:image {"sizeSlug":"full"} -->
+<figure class="wp-block-image size-full">{{IMG|b_everitt.png|Two stacked bars. Market towns around 1600: {{everitt.town_share|pct0}} are towns today. Other medieval market places: {{everitt.not_town_share|pct0}} are towns, most of the rest villages.|What became of the market places that were, and were not, market towns around 1600.}}</figure>
+<!-- /wp:image -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">The ones that came to nothing</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>The saddest list is the {{failed_boroughs_n|int}} boroughs, places granted urban privileges, that are now hamlets or nothing at all. Ravenserodd and Old Winchelsea were lost to the sea. Old Sarum was abandoned for Salisbury. Castell y Bere, Dinefwr and Dryslwyn in Wales were small boroughs beside castles. Torksey on the Trent had {{examples.Torksey.hh|int}} households in Domesday Book and a borough; its parish has {{examples.Torksey.pop|int}} residents today. You can find all of them, and look up any place near you, on the interactive map.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">How I did this</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>I parsed the Gazetteer's county pages into derived variables only: counts, years, kinds of evidence, flags and converted coordinates, not its text. Its grid references are in hectometres on the National Grid; I converted them and checked {{grid_checks.n|int}} well-known places, all within 1 km of the town of that name, and corrected {{counts.grid_fixed|int}} clearly mistyped references. Places were matched to OS Open Names by name within 4 km ({{counts.name_matched_share|pct0}} found), populations come from Census 2021 built-up areas, and Domesday households from the Hull Domesday Project. "Town" here means what Ordnance Survey calls a town or city today, which is a cartographic label rather than a legal one, and a grant is not proof a market was ever held. Everything here is association, not cause.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:buttons -->
+<div class="wp-block-buttons"><!-- wp:button -->
+<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="https://tristan-hotham.github.io/medieval-markets/">Explore the interactive version</a></div>
+<!-- /wp:button -->
+
+<!-- wp:button -->
+<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="https://doi.org/10.5281/zenodo.23727144">Read the paper</a></div>
+<!-- /wp:button -->
+
+<!-- wp:button -->
+<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="https://github.com/Tristan-Hotham/medieval-markets">Data and code</a></div>
+<!-- /wp:button --></div>
+<!-- /wp:buttons -->
+
+<!-- wp:heading {"level":3} -->
+<h3 class="wp-block-heading">Notes and sources</h3>
+<!-- /wp:heading -->
+
+<!-- wp:list -->
+<ul class="wp-block-list"><!-- wp:list-item -->
+<li>Markets and fairs: {{GAZ_CREDIT}} Now at <a href="https://archives.history.ac.uk/gazetteer/">archives.history.ac.uk/gazetteer</a>. The Gazetteer is copyright; only derived variables are used and republished.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Bracton: <a href="https://amesfoundation.law.harvard.edu/Bracton/Unframed/English/v3/198.htm">Bracton on the Laws and Customs of England</a>, translated by S.E. Thorne, vol. 3, p. 198 (Ames Foundation, Harvard Law School Library). Market towns around 1600: A. Everitt's list in The Agrarian History of England and Wales, vol. IV (1967), as flagged in the Gazetteer.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Places: <a href="https://www.ordnancesurvey.co.uk/products/os-open-names">OS Open Names</a> and OS Open Rivers, contains OS data © Crown copyright and database right 2026, Open Government Licence v3.0. Census 2021 and geography: Office for National Statistics, Open Government Licence v3.0.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Domesday: Hull Domesday Project (CC BY-NC-SA), via <a href="https://tristan-hotham.github.io/domesday-destiny/">Domesday Destiny</a>. Roman roads: Itiner-e (CC BY 4.0). Coastline: Natural Earth.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Paper, data and code: <a href="https://doi.org/10.5281/zenodo.23727144">Zenodo</a> and <a href="https://github.com/Tristan-Hotham/medieval-markets">GitHub</a>.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>I wrote the text, with drafting and editing assistance from Claude (Anthropic), which also helped prepare the analysis code. I reviewed and checked all text and results.</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->

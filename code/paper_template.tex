@@ -1,0 +1,219 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Pagella}
+\newfontfamily\headfont{Inter}[UprightFont=*-ExtraBold,BoldFont=*-ExtraBold,Extension=.otf,Path=/usr/share/fonts/opentype/inter/]
+\usepackage[a4paper,margin=2.3cm]{geometry}
+\usepackage{graphicx,booktabs,float,caption,array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{setspace}
+\setstretch{1.05}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.75}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\titleformat{\section}{\headfont\Large}{\thesection}{0.8em}{}
+\titleformat{\subsection}{\headfont\large}{\thesubsection}{0.8em}{}
+\captionsetup{font=small,labelfont=bf}
+\urlstyle{same}
+\hypersetup{pdftitle={Market Towns That Failed: What Became of the Medieval Market Places of England and Wales},pdfauthor={Tristan Hotham}}
+
+\begin{document}
+\begin{center}
+{\Large\bfseries Market Towns That Failed: What Became of the\\[2pt] Medieval Market Places of England and Wales\par}
+\vspace{1.2em}
+{\large Tristan Hotham\par}
+\vspace{0.3em}
+{\small Independent researcher\\
+ORCID: 0000-0003-4931-9349\\
+DOI: \href{https://doi.org/10.5281/zenodo.23727144}{https://doi.org/10.5281/zenodo.23727144}\par}
+\vspace{0.8em}
+2026
+\end{center}
+
+\begin{quote}
+\small
+\begin{center}\textbf{Abstract}\end{center}
+Between the Norman Conquest and 1516 the English Crown licensed markets on a remarkable scale, each grant a bet that a place would grow into a town. I parse the Online Gazetteer of Markets and Fairs in England and Wales to 1516 into derived variables for {{counts.places|int}} places, {{counts.markets|int}} markets and {{counts.fairs|int}} fairs and follow each of the {{counts.market_places|int}} placed market places to today using OS Open Names and Census 2021 built-up areas. The Gazetteer records {{counts.market_lines_granted|int}} royal market grants; {{grants.share_1200_1349|pct0}} fall between 1200 and 1348, with a peak of {{grants.peak_n|int}} in the 1250s, and grants collapse after the Black Death. Today {{outcomes.town.n|int}} market places ({{outcomes.town.share|pct0}}) are towns or cities, {{outcomes.absorbed.n|int}} have been absorbed by larger towns, {{outcomes.village.n|int}} ({{outcomes.village.share|pct0}}) are villages and {{hamlet_or_gone|int}} are hamlets or have gone from the map. Success fell steeply with the date of the first grant: {{period.prescriptive.town_share|pct0}} of markets held by custom are towns today, against {{period.1300 to 1348.town_share|pct0}} of places first granted a market in 1300 to 1348. In a logistic regression, borough status (odds ratio {{or_all.borough.odds_ratio|f1}}), a mint, a fair, a major river and a Roman road all raise the odds of being a town today, while a market already on record within Bracton's six and two-thirds miles roughly halves them ({{or_all.bracton.odds_ratio|f2}}). Of the market towns listed by Everitt for about 1600, {{everitt.town_share|pct0}} are towns today, against {{everitt.not_town_share|pct0}} of the other medieval market places. The places that became towns were mostly those already central before the charter boom.
+
+\textbf{Keywords:} medieval markets; market charters; boroughs; urban history; Black Death; Bracton; persistence; England; Wales
+\end{quote}
+
+\section{Introduction}
+
+Between about 1200 and the Black Death, the English Crown issued licences to hold markets and fairs at a rate it never matched before or after. Landlords sought them because a market brought tolls and rents and might draw people to settle; the king granted them, usually by charter, in return for a fee. Historians have long noted that many of these markets were short-lived, and that the network of market towns of the sixteenth century was far smaller than the list of medieval grants (Britnell 1981; Everitt 1967). This note asks a simple question of the whole list: which of the places that received or held a market before 1516 are towns today, and which are villages or fields?
+
+It is the third of a series of open-data studies that test whether early importance lasts. Domesday Destiny compared every place in Domesday Book with its population in 2021 (Hotham 2026a); Minted followed the late Anglo-Saxon and Norman mint towns to 1377, 1801 and today (Hotham 2026b). A market charter is a different kind of evidence: not a measure of what a place already was, but a licence for what its lord hoped it might become. That makes it a useful test of how far medieval ambitions shaped the map of modern towns.
+
+An interactive version of this study, with a map of every market place and its outcome, is at \url{https://tristan-hotham.github.io/medieval-markets/}.
+
+\section{Data}
+
+\subsection{The Gazetteer}
+
+The source for markets and fairs is Samantha Letters's Online Gazetteer of Markets and Fairs in England and Wales to 1516, compiled at the Centre for Metropolitan History of the Institute of Historical Research and published in print by the List and Index Society in 2003 (Letters 2003; Letters 2013). The Gazetteer covers every pre-1974 English county and Wales. Each entry names a place, gives its National Grid reference, notes whether it was a borough or held a mint, whether it was a market town around 1600 in Alan Everitt's list (Everitt 1967) and whether it had a fair in William Harrison's list of 1587, and then lists each market (M) and fair (F) with the kind of evidence: a royal charter, a letter close, a letter patent, another kind of grant, or a prescriptive right held by custom.
+
+The information in the Gazetteer is copyright. I used it only to derive variables for each place: its county, its grid reference converted to coordinates, the number of markets and fairs, the number of markets of each kind of evidence, the first year with evidence for a market of each kind and for a fair, and flags for borough, mint, Everitt's list and Harrison's list. No text from the Gazetteer is reproduced in the data or in this note, and the Gazetteer is acknowledged in the form it requests on every output.
+
+Parsing the {{counts.counties|int}} county pages gives {{counts.places|int}} place entries with {{counts.markets|int}} markets and {{counts.fairs|int}} fairs. {{counts.market_places_all|int}} places have at least one market; {{counts.fair_only|int}} have fairs only. One place, Lothingland in Suffolk, has no grid reference and is not placed, leaving {{counts.market_places|int}} placed market places ({{counts.england_market_places|int}} in England and {{counts.wales_market_places|int}} in Wales). Of the markets, {{counts.market_lines_granted|int}} rest on a royal grant ({{counts.market_lines_charter|int}} by charter) and {{counts.market_lines_prescriptive|int}} on prescriptive right. {{counts.places_prescriptive|int}} places have at least one prescriptive market, {{counts.boroughs|int}} were boroughs by 1516 and {{counts.mints|int}} had a mint. The year of each market or fair is the first year between 600 and 1540 written in its line: for a grant this is the year of the grant; for a prescriptive market it is the year the market is first recorded, which may be centuries after it began.
+
+\subsection{Grid references}
+
+The Gazetteer gives each place two four-digit numbers in hectometres on the Ordnance Survey National Grid: Ashford in Kent, for example, is 6008 1428, that is easting 600,800 m and northing 142,800 m. I converted these from the British National Grid (EPSG:27700) to latitude and longitude with pyproj and checked {{grid_checks.n|int}} well-known places against the OS Open Names point for the town of the same name: all lie within {{grid_checks.max_offset_m|int}} m (median {{grid_checks.median_offset_m|int}} m). Across all {{counts.exact_name|int}} places matched exactly by name, the median offset is {{counts.median_offset_m|int}} m. {{counts.grid_fixed|Words}} grid references were corrected. Three in Devon and one in Cornwall read correctly only if the northing is taken as decametres, a dropped leading zero; three more lie far from the only place of that name nearby and were moved to it (Wigan, where the printed reference falls about 29 km away, Sisland and Trefnant). All corrections are recorded in the data.
+
+\subsection{Places today}
+
+The outcome is taken from OS Open Names, Ordnance Survey's open gazetteer of place names (Ordnance Survey 2026a), which classes every populated place in Great Britain as a City, Town, Village, Hamlet, Other Settlement or Suburban Area. Each market place was matched to the nearest OS populated place with the same name within 4 km of its grid reference, comparing letters only and ignoring case, apostrophes, ``St'' and ``Saint'' and any Welsh alternative name. Where no exact match was found, similar spellings (similarity of at least 0.85), names that contain one another (Staines and Staines-upon-Thames) and the same words in a different order (Soham Earl and Earl Soham) were accepted within 3 km. {{counts.exact_name|int}} market places matched exactly and {{counts.similar_name|int}} by a similar name; {{counts.nearest_only|int}} could be related only to the nearest OS populated place within 1.5 km, and {{counts.no_place|int}} have no populated place within 1.5 km.
+
+Census 2021 usual residents were summed from Lower Layer Super Output Areas to the 2022 built-up area of the same name, using the ONS best-fit lookup (Office for National Statistics 2022; 2023). I also recorded the built-up area around each point: the area to which the nearest MSOA population-weighted centroid belongs, if that centroid lies within 1 km. Domesday households in 1086 come from the Hull Domesday Project data as prepared for Domesday Destiny (Hull Domesday Project; Hotham 2026a), matched by name within 4 km; {{counts.domesday_households|int}} market places have a household count.
+
+\subsection{Geography}
+
+Three measures of position were computed for every place. Major rivers are OS Open Rivers watercourses whose named course is at least 40 km long (Ordnance Survey 2026b); a place is on a major river if it lies within 1 km of one. Roman roads come from the Itiner-e reconstruction (de Soto et al. 2025), excluding lines marked hypothetical; a place is on a Roman road if within 1 km. The Itiner-e lines in Britain sit about 100 m from the modern roads that follow them, which does not matter at this threshold. A place is coastal if within 3 km of the Natural Earth 1:10m coastline.
+
+\section{Methods}
+
+\subsection{Outcome}
+
+Each market place is given one of five outcomes. A \emph{town or city} is a place whose own name is an OS City or Town. A place is \emph{swallowed by a town} if its own name is an OS Suburban Area; or an OS Village, Hamlet or Other Settlement lying inside a built-up area of 20,000 or more people (as for London districts such as Croydon, Bromley and Southwark, which OS lists as ``Other Settlement''); or if its name is not on the OS list and the nearest OS populated place within 1.5 km is a City, Town or Suburban Area, or the point lies in such a built-up area. A \emph{village} is an OS Village, or an OS Hamlet or Other Settlement with a same-name built-up area of at least 1,000 people (OS uses ``Other Settlement'' for some sizeable places, such as Kings Langley). A \emph{hamlet} is any other OS Hamlet or Other Settlement. A place has \emph{gone from the map} if its name is not on the OS list near its grid reference and no town lies within 1.5 km. One manual correction was made: Old Sarum, whose name OS now gives to a modern housing area beside the abandoned medieval city, is counted as gone. The main outcome is binary: town or city against everything else.
+
+\subsection{Timing, spacing and predictors}
+
+Market places are grouped by how their market began: prescriptive (by custom), or by the period of their first market grant (before 1200, then 1200 to 1249, 1250 to 1299, 1300 to 1348, 1349 to 1399 and 1400 to 1516). Grants are counted by decade for every market or fair line whose kind is a charter, letter close, letter patent or other grant.
+
+The thirteenth-century treatise known as Bracton gives the rule by which a new market could be challenged as a nuisance to an older one. A reasonable day's journey is twenty miles, divided into three parts: the morning for going to market, the middle for buying and selling, and the evening for returning home; a market held within six and two-thirds of that measure is ``neighbouring'' (Bracton, ed. Woodbine and trans. Thorne, vol. 3, p. 198; Thorne renders the unit as leagues). I use a third of twenty miles, {{spacing.bracton_km|f1}} km, as the threshold, and measure for each place the straight-line distance to the nearest market place whose first recorded market is earlier.
+
+Predictors are compared one at a time with Fisher's exact test, and together in a logistic regression of being a town or city today on: borough by 1516; mint; prescriptive market; two or more markets recorded; at least one fair; a major river within 1 km; a Roman road within 1 km; the sea within 3 km; an older market within {{spacing.bracton_km|f1}} km; a first grant in 1349 or later; and Wales. A second model, restricted to the {{model_domesday.n|int}} market places with Domesday households, replaces Wales with log households.
+
+\section{Results}
+
+\subsection{The charter boom}
+
+The Gazetteer records {{grants.total|int}} royal market grants with a year (Figure~\ref{fig:decades}). Only {{grants.before1200|int}} date from before 1200. Between 1200 and 1348 there were {{grants.y1200_1349|int}}, or {{grants.share_1200_1349|pct0}} of the total, an average of {{grants.mean_per_decade_1200_1349|int}} per decade. The busiest decade was the {{grants.peak_decade|raw}}s, with {{grants.peak_n|int}} market grants, and the first decade of the fourteenth century had {{grants.d1300_09|int}}. The 1340s had {{grants.d1340s|int}}; the 1350s, the first decade after the Black Death, {{grants.d1350s|int}}. From 1350 to 1509 the average was {{grants.mean_per_decade_1350_1509|f1}} per decade. Grants of fairs ({{grants.fairs_total|int}}) follow the same course.
+
+\begin{figure}[tbp]\centering
+\includegraphics[width=0.9\textwidth]{f_decades.png}
+\caption{Royal grants of markets (dark) and fairs (pale) per decade, 1060s to 1510s, from the Gazetteer. Dashed line: 1348.}\label{fig:decades}
+\end{figure}
+
+\subsection{What the market places are today}
+
+Of the {{counts.market_places|int}} placed market places, {{outcomes.town.n|int}} ({{outcomes.town.share|pct1}}) are towns or cities today, {{outcomes.absorbed.n|int}} ({{outcomes.absorbed.share|pct1}}) have been swallowed by a larger town, {{outcomes.village.n|int}} ({{outcomes.village.share|pct1}}) are villages, {{outcomes.hamlet.n|int}} ({{outcomes.hamlet.share|pct1}}) are hamlets and {{outcomes.gone.n|int}} ({{outcomes.gone.share|pct1}}) have gone from the map (Figure~\ref{fig:map}). Where a 2022 built-up area of the same name exists, the median population of the market places that are towns today is {{pop.town_median|int}}. Wales differs from England: {{outcomes_wales.town.share|pct0}} of its {{counts.wales_market_places|int}} market places are towns, against {{outcomes_england.town.share|pct0}} in England.
+
+\begin{figure}[tbp]\centering
+\includegraphics[width=0.8\textwidth]{f_map.png}
+\caption{The {{counts.market_places|int}} placed medieval market places of England and Wales, by outcome today (OS Open Names and Census 2021 built-up areas). Rings: places gone from the map.}\label{fig:map}
+\end{figure}
+
+The date at which a place's market began is a strong guide to its fate (Table~\ref{tab:period}, Figure~\ref{fig:period}). {{period.prescriptive.town_share|pct0}} of places with a prescriptive market are towns today, and {{period.before 1200.town_share|pct0}} of the {{period.before 1200.n|int}} whose first market was granted before 1200. For first grants the share falls to {{period.1200 to 1249.town_share|pct0}} in 1200 to 1249, {{period.1250 to 1299.town_share|pct0}} in 1250 to 1299 and {{period.1300 to 1348.town_share|pct0}} in 1300 to 1348. The few places first granted a market after the Black Death did little better ({{period.1349 to 1399.town_share|pct0}} of {{period.1349 to 1399.n|int}} in 1349 to 1399; {{period.1400 to 1516.town_share|pct0}} of {{period.1400 to 1516.n|int}} in 1400 to 1516).
+
+{{TABLE_PERIOD}}
+
+\begin{figure}[tbp]\centering
+\includegraphics[width=0.85\textwidth]{f_period.png}
+\caption{Share of market places that are a town or city today, by how their market began.}\label{fig:period}
+\end{figure}
+
+\subsection{Spacing}
+
+The median market place lay {{spacing.median_nn_km|f1}} km from its nearest neighbour, and {{spacing.share_nn_within_bracton|pct0}} lay within {{spacing.bracton_km|f1}} km of another market place. Of the {{spacing.granted_n|int}} places whose first market was a grant and for which an older market exists, {{spacing.granted_close|int}} ({{spacing.granted_close_share|pct0}}) lay within {{spacing.bracton_km|f1}} km of a market already on record, and the median distance to the nearest older market was {{spacing.granted_median_earlier_km|f1}} km. Bracton's rule therefore did not prevent close packing. But closeness is strongly associated with failure: {{spacing.close_town|pct0}} of the {{spacing.close_n|int}} close places are towns today, against {{spacing.far_town|pct0}} of the {{spacing.far_n|int}} with no older market within that distance (Figure~\ref{fig:bracton}). The share rises with distance up to about 15 km and is flat beyond it.
+
+\begin{figure}[tbp]\centering
+\includegraphics[width=0.85\textwidth]{f_bracton.png}
+\caption{Places whose first market was a royal grant: share that are towns today, by distance to the nearest older market place. Dashed line: a third of a twenty-mile day's journey ({{spacing.bracton_km|f1}} km).}\label{fig:bracton}
+\end{figure}
+
+\subsection{Predictors of success}
+
+One at a time, the features most strongly associated with being a town today are being on Everitt's list of market towns around 1600 ({{single.everitt.town_yes|pct0}} against {{single.everitt.town_no|pct0}}), a mint ({{single.mint.town_yes|pct0}} against {{single.mint.town_no|pct0}}), borough status ({{single.borough.town_yes|pct0}} against {{single.borough.town_no|pct0}}), a prescriptive market ({{single.prescriptive.town_yes|pct0}} against {{single.prescriptive.town_no|pct0}}) and a major river ({{single.river.town_yes|pct0}} against {{single.river.town_no|pct0}}). Two or more markets, a Roman road and the coast are weaker; having a fair makes little difference on its own ({{single.fair.town_yes|pct0}} against {{single.fair.town_no|pct0}}).
+
+In the logistic regression (Table~\ref{tab:model}, Figure~\ref{fig:forest}), borough status has the largest effect (odds ratio {{or_all.borough.odds_ratio|f2}}), followed by a fair ({{or_all.fair.odds_ratio|f2}}), a mint ({{or_all.mint.odds_ratio|f2}}), a prescriptive market ({{or_all.presc.odds_ratio|f2}}), a major river ({{or_all.on_river.odds_ratio|f2}}), a Roman road ({{or_all.on_roman.odds_ratio|f2}}) and two or more markets ({{or_all.n_markets2.odds_ratio|f2}}). An older market within {{spacing.bracton_km|f1}} km lowers the odds (odds ratio {{or_all.bracton.odds_ratio|f2}}). The coast, a late first grant and Wales are not distinguishable from no effect. The model's pseudo $R^2$ is {{model_all.pseudo_r2|f2}}.
+
+{{TABLE_MODEL}}
+
+\begin{figure}[tbp]\centering
+\includegraphics[width=0.85\textwidth]{f_forest.png}
+\caption{Odds ratios and 95\% intervals for being a town or city today, logistic regression on {{model_all.n|int}} market places. Filled: interval excludes 1.}\label{fig:forest}
+\end{figure}
+
+Domesday size matters only at the top. Among the {{domesday.n|int}} market places with a Domesday household count, {{domesday_bands.4.town_share|pct0}} of those with 100 or more households are towns today, against {{domesday_bands.0.town_share|pct0}} of those with fewer than 20, {{domesday_bands.1.town_share|pct0}} with 20 to 39 and {{domesday_bands.2.town_share|pct0}} with 40 to 59. Once the other predictors are included, households have little further effect (odds ratio {{model_domesday.hh_double_or|f2}} per doubling, with an interval that includes 1; Table~\ref{tab:model}).
+
+\subsection{The midpoint around 1600}
+
+{{everitt.n|int}} of the market places ({{everitt.share_of_markets|pct0}}) appear in Everitt's list of market towns around 1500 to 1640. Of these, {{everitt.town_share|pct0}} are towns today; of the {{everitt.not_n|int}} that do not appear, {{everitt.not_town_share|pct0}} are (Figure~\ref{fig:everitt}). Most of the sorting between towns and villages had therefore happened by around 1600. The later losses are real but smaller: {{everitt.fell_n|int}} of the market towns of around 1600 are villages, hamlets or gone today.
+
+\begin{figure}[tbp]\centering
+\includegraphics[width=0.85\textwidth]{f_everitt.png}
+\caption{Outcome today of market places that were, and were not, market towns around 1600 in Everitt's list.}\label{fig:everitt}
+\end{figure}
+
+\subsection{Failures}
+
+{{failed_boroughs_n|Words}} market places that were boroughs by 1516 are hamlets or have gone from the map today (Table~\ref{tab:failed}); a further {{boroughs_village|int}} boroughs are villages. Some of the failed boroughs were lost to the sea, as at Ravenserodd at the mouth of the Humber and Old Winchelsea in Sussex; Old Sarum was abandoned for Salisbury; several, in Wales and the Marches, were small boroughs beside castles. In all, {{gone_n|int}} market places have gone from the map.
+
+{{TABLE_FAILED}}
+
+\section{Discussion}
+
+The market charter was a licence, not a prediction, and most of the bets it represented did not pay off. Fewer than a third of medieval market places are towns today, and more than half are villages. The pattern of success is not random, though. The places that became towns were mostly those that were central before the charter boom: Anglo-Saxon and Norman boroughs, mints and markets held by custom, on major rivers and old roads. The great wave of grants in the thirteenth century added hundreds of markets in the spaces between them, often within a few kilometres of an older market, and those infill markets rarely became towns.
+
+This fits the view that the thirteenth-century proliferation of markets reflected a growing, increasingly commercial rural economy that could support many small village markets for a time (Britnell 1981), and that contraction after 1348 removed the demand that sustained them. It also gives some empirical colour to Bracton's day's-journey rule: a market within a third of a day's journey of an older one could exist, and many did, but it was competing for the same buyers and sellers and seldom grew.
+
+The c.1600 list is the best single predictor, which suggests that the long-run hierarchy of English market towns was largely fixed by the end of the sixteenth century. Later growth added many towns that had no medieval market: of the {{os_towns.n|int}} places OS classes as a town or city in England and Wales, {{os_towns.share_with_market_2km|pct0}} have a medieval market place within 2 km, so the rest grew up later. But the medieval market towns that survived to 1600 mostly remain towns.
+
+\section{Limitations}
+
+First, a grant is not a functioning market. The Gazetteer records grants and other evidence but cannot show whether every granted market was held or for how long; the first year with evidence for a prescriptive market is not its foundation date. Second, the outcome relies on Ordnance Survey's place classification, which is a cartographic judgement: Upton upon Severn and Lavenham, for example, are classed as villages. Built-up area populations were used to catch districts of large towns and sizeable hamlet-type entries, but the boundary between a large village and a small town is inevitably fuzzy. Third, matching by name can misplace a few places, particularly where names have changed or are common; seven grid references were corrected. Fourth, Domesday households could be matched for only {{domesday.n|int}} places, and Domesday does not cover the far north. Finally, all results are associations. Borough status, rivers, roads and early markets go together with age, lordship and wealth that these measures capture only crudely.
+
+\section{Conclusion}
+
+Of {{counts.market_places|int}} places in England and Wales with a market recorded by 1516, {{outcomes.town.n|int}} are towns or cities today and {{outcomes.village.n|int}} are villages. The charter boom of 1200 to 1348 created a dense web of village markets that mostly stayed village markets; the places that became towns were those that were boroughs, mints or old prescriptive markets, on rivers and roads, with room around them. By around 1600 most of the sorting was done.
+
+\section*{Data and code availability}
+
+Derived data (one row per Gazetteer place with its derived variables, coordinates, matched OS place, built-up area and Domesday match, distances to rivers, roads, coast and other markets), decade and county summaries, model estimates, grid reference checks and all reported numbers (\texttt{results.json}) are at \url{https://github.com/Tristan-Hotham/medieval-markets}, with the analysis code, and in the Zenodo record for this paper (\url{https://doi.org/10.5281/zenodo.23727144}). The interactive version is at \url{https://tristan-hotham.github.io/medieval-markets/}. Because the derived data include Hull Domesday Project figures (CC BY-NC-SA), they and the text are released under CC BY-NC-SA 4.0; code is MIT. The Gazetteer's text is not included. Contains OS data \textcopyright{} Crown copyright and database right 2026, and ONS data, used under the Open Government Licence v3.0.
+
+Acknowledgement of the Gazetteer, in the form it requests: {{GAZ_CREDIT}}
+
+\section*{Funding and competing interests}
+
+This work received no funding. The author declares no competing interests.
+
+\section*{Use of AI}
+
+I wrote the text, with drafting and editing assistance from Claude (Anthropic), which also helped prepare the analysis code. I reviewed and checked all text and results.
+
+\section*{References}
+\small
+\setlength{\parskip}{0.35em}
+\hangindent=1.5em Bracton. \textit{Bracton on the Laws and Customs of England}, ed. G.~E. Woodbine, trans. S.~E. Thorne, vol. 3. Cambridge, MA: Belknap Press, 1977. Online at the Ames Foundation, Harvard Law School Library: \url{https://amesfoundation.law.harvard.edu/Bracton/Unframed/English/v3/198.htm}
+
+\hangindent=1.5em Britnell, R.~H. (1981). The proliferation of markets in England, 1200 to 1349. \textit{Economic History Review} 34(2), 209 to 221.
+
+\hangindent=1.5em de Soto, P., Pa\v{z}out, A., Brughmans, T. and others (2025). Itiner-e: a high-resolution dataset of roads of the Roman Empire. \textit{Scientific Data}. Dataset: \url{https://zenodo.org/records/17122148}. CC BY 4.0.
+
+\hangindent=1.5em Everitt, A. (1967). The marketing of agricultural produce. In J. Thirsk (ed.), \textit{The Agrarian History of England and Wales}, vol. IV, 1500 to 1640. Cambridge: Cambridge University Press. List of market towns, pp. 468 to 475.
+
+\hangindent=1.5em Hotham, T. (2026a). Is Domesday Destiny? Interactive study and data. \url{https://tristan-hotham.github.io/domesday-destiny/}
+
+\hangindent=1.5em Hotham, T. (2026b). Minted: The Anglo-Saxon and Norman Mint Towns of England and What Became of Them. Zenodo. \url{https://doi.org/10.5281/zenodo.23689962}
+
+\hangindent=1.5em Hull Domesday Project. Professor J.~J.~N. Palmer, George Slater and the University of Hull. CC BY-NC-SA. \url{https://digitalcollections.hull.ac.uk/collections/3t945r28b}
+
+\hangindent=1.5em Letters, S. (2003). \textit{Gazetteer of Markets and Fairs in England and Wales to 1516}. List and Index Society, special series 32. London.
+
+\hangindent=1.5em Letters, S. (2013). Online Gazetteer of Markets and Fairs in England and Wales to 1516. Centre for Metropolitan History, Institute of Historical Research. \url{http://www.history.ac.uk/cmh/gaz/gazweb2.html}; now \url{https://archives.history.ac.uk/gazetteer/}. Copyright.
+
+\hangindent=1.5em Natural Earth. 1:10m land and coastline. Public domain. \url{https://www.naturalearthdata.com}
+
+\hangindent=1.5em Office for National Statistics (2022). Census 2021: TS001 Number of usual residents in households and communal establishments. Open Government Licence v3.0. \url{https://www.nomisweb.co.uk}
+
+\hangindent=1.5em Office for National Statistics (2023). Built-up areas (2022) and LSOA and MSOA (2021) lookups and population-weighted centroids. Open Geography Portal, Open Government Licence v3.0. \url{https://geoportal.statistics.gov.uk}
+
+\hangindent=1.5em Ordnance Survey (2026a). OS Open Names. Open Government Licence v3.0. \url{https://www.ordnancesurvey.co.uk/products/os-open-names}
+
+\hangindent=1.5em Ordnance Survey (2026b). OS Open Rivers. Open Government Licence v3.0. \url{https://www.ordnancesurvey.co.uk/products/os-open-rivers}
+
+\end{document}

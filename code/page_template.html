@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Market Towns That Failed</title>
+<meta name="description" content="Medieval kings granted {{counts.market_lines_granted|int}} markets in England and Wales before 1516. I followed all {{counts.market_places|int}} market places to today: {{outcomes.town.n|int}} are towns or cities, {{outcomes.village.n|int}} are villages.">
+<meta property="og:title" content="Market towns that failed: what became of England and Wales's medieval market places?">
+<meta property="og:description" content="Of {{counts.market_places|int}} places with a medieval market, {{town_share|pct0}} are towns today. The charter boom peaked in the 1250s, collapsed after the Black Death, and most late grants never took.">
+<meta property="og:image" content="https://tristan-hotham.github.io/medieval-markets/header.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800;9..144,900&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+/* Parchment. Wax red = town today. Burnt orange = swallowed by a town. Ochre = village. Olive grey = hamlet. Pale ring = gone. */
+:root{
+  --bg:#F4EEE1; --panel:#EBE3D2; --fg:#2B2219; --muted:#6F6354; --rule:#DDD2BD; --card:#FBF8F1; --border:#C9BBA0;
+  --wax:#9C2A22; --waxl:#D98F86; --abs:#C8682E; --vil:#C49A3E; --ham:#8A8774; --gone:#A69C8C; --ink:#2F4A6B; --sea:#EEE7D8;
+  --display:"Fraunces",Georgia,"Times New Roman",serif;
+  --body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#1C1915; --panel:#25211C; --fg:#EDE6D8; --muted:#AFA493; --rule:#3A332A; --card:#221E19; --border:#4A4135;
+  --wax:#E2675B; --waxl:#9C4A42; --abs:#E8914F; --vil:#D9B661; --ham:#A9A68F; --gone:#7D7468; --ink:#8FB0D8; --sea:#181512; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1C1915; --panel:#25211C; --fg:#EDE6D8; --muted:#AFA493; --rule:#3A332A; --card:#221E19; --border:#4A4135;
+  --wax:#E2675B; --waxl:#9C4A42; --abs:#E8914F; --vil:#D9B661; --ham:#A9A68F; --gone:#7D7468; --ink:#8FB0D8; --sea:#181512; color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 18px/1.62 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));overflow-x:hidden}
+.wrap{max-width:680px;margin:0 auto;padding-block:28px 64px}
+.wrap .bleed{width:min(1080px,calc(100vw - 32px));margin-left:calc((100% - min(1080px,100vw - 32px))/2);margin-right:0}
+a{color:inherit;text-decoration-color:var(--wax);text-underline-offset:3px}
+.kicker{font:500 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.kicker b{background:var(--wax);color:var(--bg);padding:5px 8px;font-weight:500}
+header.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 24px;align-items:end;border-bottom:6px double var(--fg);padding-bottom:22px;margin-top:18px}
+h1{font:900 clamp(52px,12.5vw,106px)/.88 var(--display);letter-spacing:-.02em;margin:0;font-variation-settings:"SOFT" 50;color:var(--fg)}
+h1 em{font-style:normal;color:var(--wax)}
+.mark{width:clamp(92px,21vw,170px);height:auto;display:block}
+.dek{grid-column:1/-1;font-size:21px;line-height:1.42;margin:8px 0 0;max-width:46ch}
+.byline{font:400 13px/1.4 var(--mono);color:var(--muted);margin-top:14px}
+h2{font:800 34px/1.04 var(--display);letter-spacing:-.01em;margin:52px 0 10px;text-wrap:balance}
+h2 .n{font:500 13px/1 var(--mono);color:var(--wax);display:block;letter-spacing:.1em;margin-bottom:10px}
+h3{font:600 20px/1.25 var(--display);margin:28px 0 6px}
+p{margin:0 0 16px}
+.lede::first-letter{font:900 72px/.8 var(--display);float:left;margin:6px 10px 0 0;color:var(--wax)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);margin:26px 0 8px}
+.stats div{background:var(--card);padding:14px 12px}
+.stats b{display:block;font:900 clamp(28px,6vw,40px)/1 var(--display);color:var(--fg)}
+.stats b.r{color:var(--wax)}.stats b.o{color:var(--vil)}.stats b.i{color:var(--ink)}
+.stats span{font:400 12px/1.35 var(--mono);color:var(--muted);display:block;margin-top:6px}
+@media (max-width:600px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.figure{margin:26px 0 30px}
+.fig-h{font:600 19px/1.25 var(--display);margin:0 0 4px}
+.fig-sub{font:400 13px/1.45 var(--mono);color:var(--muted);margin:0 0 12px}
+.src{font:400 12px/1.45 var(--mono);color:var(--muted);margin-top:10px}
+.chart{width:100%;position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{font-family:var(--mono);fill:var(--fg)}
+.lab{font-size:12px}.lab.m{fill:var(--muted)}.lab.b{font-weight:500}.lab.s{font-size:11px}
+.tip{position:absolute;pointer-events:none;background:var(--fg);color:var(--bg);font:400 12px/1.45 var(--mono);padding:8px 10px;border-radius:3px;max-width:270px;z-index:1000;transform:translate(-50%,calc(-100% - 12px));display:none}
+.tip b{font-weight:500}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 10px}
+.btn{font:500 12px/1 var(--mono);background:var(--card);color:var(--fg);border:1px solid var(--border);border-radius:3px;padding:8px 10px;cursor:pointer;min-height:36px}
+.btn[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.btn[aria-pressed="false"].o{opacity:.55;text-decoration:line-through}
+.btn i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.btn:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--wax);outline-offset:2px}
+.slider{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center;margin:0 0 8px}
+.slider input{width:100%;accent-color:var(--wax)}
+.yr{font:800 26px/1.1 var(--display);margin:2px 0 8px}
+.yr small{font:400 13px/1.3 var(--mono);color:var(--muted);display:block;margin-top:4px}
+.search{display:flex;gap:8px;margin:0 0 10px;flex-wrap:wrap}
+.search input{font:400 14px/1 var(--mono);padding:9px 10px;border:1px solid var(--border);background:var(--card);color:var(--fg);border-radius:3px;flex:1 1 220px;min-width:0}
+.mapgrid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:820px){.mapgrid{grid-template-columns:1fr}}
+#map{height:clamp(440px,74vh,680px);border:1px solid var(--border);background:var(--sea);border-radius:2px;z-index:0}
+.legend{display:flex;gap:6px 14px;flex-wrap:wrap;font:400 12px/1.3 var(--mono);color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.side{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--wax);padding:12px 14px;font:400 13px/1.5 var(--mono)}
+.card.empty{border-left-color:var(--border);color:var(--muted)}
+.card b.t{font:600 18px/1.2 var(--display);display:block;margin-bottom:6px}
+.card dl{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;margin:6px 0 8px}
+.card dt{color:var(--muted)}.card dd{margin:0;overflow-wrap:anywhere}
+.pill{display:inline-block;font:500 11px/1 var(--mono);padding:4px 7px;border-radius:10px;color:#fff;margin:0 4px 4px 0}
+.pull{font:600 26px/1.25 var(--display);border-left:6px solid var(--wax);padding:4px 0 4px 18px;margin:30px 0}
+.note{background:var(--panel);border:1px solid var(--rule);padding:14px 16px;font-size:16px;margin:22px 0}
+.note h3{margin-top:0}
+table.t{width:100%;border-collapse:collapse;font:400 13px/1.35 var(--mono)}
+table.t th{text-align:left;font-weight:500;color:var(--muted);border-bottom:2px solid var(--fg);padding:6px 8px 6px 0;vertical-align:bottom;cursor:pointer}
+table.t td{border-bottom:1px solid var(--rule);padding:7px 8px 7px 0;vertical-align:top}
+table.t td.num,table.t th.num{text-align:right}
+.tablewrap{overflow-x:auto;max-height:520px;overflow-y:auto;border-bottom:1px solid var(--rule)}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.cta a{font:500 13px/1 var(--mono);text-decoration:none;border:1px solid var(--fg);padding:11px 14px;border-radius:3px}
+.cta a.p{background:var(--wax);border-color:var(--wax);color:var(--bg)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 18px;padding:0;list-style:none}
+.chips li{font:400 12.5px/1.3 var(--mono);border:1px solid var(--border);background:var(--card);padding:7px 9px;border-radius:14px;cursor:pointer}
+.chips li b{color:var(--wax);font-weight:500}
+.flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0;font:400 12.5px/1.4 var(--mono)}
+.flow div{background:var(--card);border:1px solid var(--border);padding:12px}
+.flow b{display:block;font:900 30px/1 var(--display);margin-bottom:6px}
+@media (max-width:600px){.flow{grid-template-columns:1fr}}
+footer{border-top:6px double var(--fg);margin-top:56px;padding-top:16px;font:400 13px/1.55 var(--mono);color:var(--muted)}
+footer p{margin:0 0 10px}
+.theme{position:fixed;right:12px;bottom:12px;z-index:1001}
+.leaflet-container{font:400 12px/1.4 var(--mono);background:var(--sea)}
+.leaflet-tooltip{font:400 12px/1.4 var(--mono)}
+.leaflet-control-attribution{background:color-mix(in srgb,var(--card) 85%,transparent)!important;color:var(--muted)!important;font-size:10px}
+.leaflet-control-attribution a{color:var(--fg)!important}
+.leaflet-bar a{background:var(--card);color:var(--fg);border-bottom-color:var(--border)}
+.leaflet-bar a:hover{background:var(--panel)}
+.leaflet-bar{border:1px solid var(--border)!important}
+@media print{.theme,.controls{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="kicker"><b>Data study</b><span>Charters × towns</span><span>England and Wales, 1066 to 1516 to today</span></div>
+<header class="hero">
+  <h1>Market towns that <em>failed</em></h1>
+  <svg class="mark" viewBox="-100 -100 200 200" aria-hidden="true"><g id="heroMark"></g></svg>
+  <p class="dek">Between the Norman Conquest and 1516, English kings licensed markets in their thousands, each one a bet that a village would grow into a town. I followed every one of the {{counts.market_places|int}} market places in the Gazetteer of Markets and Fairs to today. Which became towns, and which are villages or fields now?</p>
+</header>
+<div class="byline">Dr Tristan Hotham, Independent researcher · October 2026 · Data: Samantha Letters, Gazetteer of Markets and Fairs in England and Wales to 1516; OS Open Names; ONS Census 2021; Hull Domesday Project</div>
+
+<div class="stats">
+  <div><b>{{counts.market_places|int}}</b><span>places in England and Wales with a market recorded by 1516</span></div>
+  <div><b class="r">{{town_share|pct0}}</b><span>are a town or city today ({{outcomes.town.n|int}} places)</span></div>
+  <div><b class="o">{{outcomes.village.n|int}}</b><span>are villages today: the commonest outcome by far</span></div>
+  <div><b class="i">{{grants.peak_n|int}}</b><span>royal market grants in the 1250s, the peak decade; {{grants.d1350s|int}} in the 1350s</span></div>
+</div>
+
+<p class="lede">In {{examples.Ravenserodd.first|raw}}, according to the Gazetteer, a market was granted at Ravenserodd, a port on the sandbanks at the mouth of the Humber. It was a borough, with {{examples.Ravenserodd.markets|words}} markets and a fair on record. Nothing is there now: the sea took it in the fourteenth century, and there is no named settlement within 1.5 km of its grid reference. Ravenserodd is the extreme case. But it is a useful reminder that a royal market charter was a licence to try, not a guarantee of anything.</p>
+<p>In the century and a half after 1200, the Crown issued market grants at a rate never seen before or since. Landlords paid for them because a market brought tolls, rents and, they hoped, townsfolk. Some of those places became Ashford, Stratford upon Avon or Salisbury. Many more stayed exactly what they were: a church, a manor and some fields, with a charter in the rolls to say that a market might once have been held there on a Tuesday.</p>
+<p>This is the third of my "is it destiny?" studies, after <a href="https://tristan-hotham.github.io/domesday-destiny/">Domesday Destiny</a> and <a href="https://tristan-hotham.github.io/saxon-mints/">Minted</a>. The question is the same: does early importance last? This time the test is the market charter, the medieval state's own bet on which places would be towns. The short answer: about {{town_share|pct0}} of medieval market places are towns today, and you could have predicted many of the winners in 1300.</p>
+
+<h2><span class="n">01 · The map</span>Every medieval market, and what is there now</h2>
+<p>Each dot is a place with a market recorded in the Gazetteer, at the grid reference the Gazetteer gives, coloured by what Ordnance Survey's gazetteer of place names calls the place today. Drag the slider to watch the markets appear: each place shows from the first year it has a market on record. Tap a dot for its story in numbers, or search for a place.</p>
+<div class="figure bleed">
+  <div class="slider">
+    <button class="btn" id="play" aria-label="Play through the years">▶</button>
+    <input type="range" id="year" min="1066" max="1516" step="1" value="1516" aria-label="Year">
+  </div>
+  <div class="yr" id="yrLab"></div>
+  <div class="controls" id="filters" role="group" aria-label="Outcome filters"></div>
+  <div class="search"><input id="q" list="names" placeholder="Find a place, e.g. Thaxted" aria-label="Find a place"><datalist id="names"></datalist><button class="btn" id="go">Show</button><button class="btn" id="bFair" aria-pressed="false">Fair-only places</button></div>
+  <div class="mapgrid">
+    <div>
+      <div id="map" role="application" aria-label="Map of medieval market places coloured by what they are today"></div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div class="side">
+      <div class="card empty" id="card">Tap a dot, search, or pick from the list below to see a place's markets, fairs and what it is today.</div>
+      <div class="fig-h" style="margin-top:4px">Biggest failures on the map</div>
+      <div class="fig-sub" style="margin:0">Boroughs by 1516 that are now hamlets or gone</div>
+      <ul class="chips" id="fails" style="margin-top:0;max-height:330px;overflow:auto"></ul>
+    </div>
+  </div>
+  <div class="src">Markets and fairs: Samantha Letters, Online Gazetteer of Markets and Fairs in England and Wales to 1516 (Centre for Metropolitan History), derived variables only. Places today: OS Open Names. A small number of grid references were corrected where the printed reference falls far from the named place (see Methods).</div>
+</div>
+
+<h2><span class="n">02 · The charter boom</span>A boom in markets, then the Black Death</h2>
+<p>The Gazetteer records {{counts.market_lines_granted|int}} royal grants of a market in England and Wales between 1066 and 1516, {{counts.market_lines_charter|int}} of them by charter, the rest by letter close, letter patent or other grant. Another {{counts.market_lines_prescriptive|int}} markets were held by custom ("prescriptive" markets: old boroughs, mints and places whose market was recorded without a known grant). Grants of fairs ran alongside: {{grants.fairs_total|int}} of them.</p>
+<div class="figure">
+  <div class="fig-h">Royal market grants per decade</div>
+  <div class="fig-sub">Red: market grants. Pale: fair grants. Dashed line: the Black Death reaches England, 1348.</div>
+  <div class="chart" id="decades"></div>
+  <div class="src">Every market or fair line in the Gazetteer whose kind is a charter, letter close, letter patent or other grant, counted in the decade of the first year written in that line (the grant date). Regrants and confirmations that the Gazetteer records as separate lines are included.</div>
+</div>
+<p>{{grants.share_1200_1349|pct0}} of all grants fall between 1200 and 1348. The busiest decade was the {{grants.peak_decade|raw}}s, with {{grants.peak_n|int}} market grants, and the 1300s were not far behind with {{grants.d1300_09|int}}. Then the curve falls off a cliff. From the 1350s to 1516 the Crown granted an average of {{grants.mean_per_decade_1350_1509|f1}} markets a decade, against {{grants.mean_per_decade_1200_1349|int}} a decade from 1200 to 1349. The Black Death killed perhaps a third or more of the population; there were simply fewer people to buy and sell, and the markets England already had were more than enough.</p>
+
+<h2><span class="n">03 · What became of them</span>Mostly villages</h2>
+<p>For each market place I looked up its own name in OS Open Names, near the Gazetteer's grid reference. I could find the same or a very similar name for {{counts.name_matched|int}} of the {{counts.market_places|int}} places ({{counts.name_matched_share|pct0}}). The result:</p>
+<div class="figure">
+  <div class="fig-h">What the {{counts.market_places|int}} medieval market places are today</div>
+  <div class="chart" id="outBar"></div>
+  <div class="src">Town or city: the place's own name is an OS City or Town. Swallowed by a town: an OS Suburban Area, a London district or similar inside a built-up area of 20,000 or more, or a lost name whose nearest place is part of a town. Village: OS Village (or a hamlet-type entry with a built-up area of 1,000 or more people). Hamlet: OS Hamlet or Other Settlement. Gone: the name is no longer on the map and no town is within 1.5 km.</div>
+</div>
+<p>Only {{outcomes.town.n|int}} ({{outcomes.town.share|pct0}}) are towns or cities today, and a further {{outcomes.absorbed.n|int}} ({{outcomes.absorbed.share|pct0}}) have been swallowed by a bigger town, like Southwark, Croydon or Kingston upon Thames in London. More than half, {{outcomes.village.n|int}} ({{outcomes.village.share|pct0}}), are villages. {{outcomes.hamlet.n|int}} are hamlets and {{outcomes.gone.n|int}} have gone from the map altogether. Where a 2022 built-up area of the same name exists, the medieval market towns that are still towns have a median of {{pop.town_median|int}} residents today.</p>
+<p>Timing mattered enormously. Places with a market by custom, which usually means an Anglo-Saxon or Norman borough, did best: {{period.prescriptive.town_share|pct0}} are towns today. Of places whose first market was a grant before 1200, {{period.before 1200.town_share|pct0}} are towns. After that the odds fall with every half century: {{period.1200 to 1249.town_share|pct0}} for first grants in 1200 to 1249, {{period.1250 to 1299.town_share|pct0}} in 1250 to 1299 and just {{period.1300 to 1348.town_share|pct0}} in 1300 to 1348.</p>
+<div class="figure">
+  <div class="fig-h">Share of market places that are towns today, by when their market began</div>
+  <div class="fig-sub">Bar: share that are an OS town or city today. Number: market places in the group.</div>
+  <div class="chart" id="period"></div>
+</div>
+<p class="pull">The late arrivals mostly failed: they were squeezed into the gaps between markets that already existed.</p>
+
+<h2><span class="n">04 · A day's journey</span>Too close to the neighbours</h2>
+<p>The thirteenth-century lawbook known as Bracton set out when a new market was a "nuisance" to an older one. A reasonable day's journey, it says, is twenty miles, divided into three parts: the morning to go to market, the middle to buy and sell, and the evening to get home. A rival market within a third of that, six and two-thirds miles or about {{spacing.bracton_km|km1}} km, could be challenged. (Thorne's translation renders the unit as leagues; the twenty-mile day is what fixes the distance.)</p>
+<p>In practice the rule did not stop the Crown packing markets in. Of {{spacing.granted_n|int}} places whose first market was a grant, {{spacing.granted_close|int}} ({{spacing.granted_close_share|pct0}}) lay within {{spacing.bracton_km|km1}} km of a market already on record, and the median distance to the nearest older market was {{spacing.granted_median_earlier_km|km1}} km. But closeness was fatal for growth. Only {{spacing.close_town|pct0}} of those squeezed-in markets are towns today, against {{spacing.far_town|pct0}} of the {{spacing.far_n|int}} that had room around them.</p>
+<div class="figure">
+  <div class="fig-h">Distance to the nearest older market, and success</div>
+  <div class="fig-sub">Places whose first market was a royal grant. Bar: share that are towns today. Number: places. Line: Bracton's 6 2/3 miles.</div>
+  <div class="chart" id="bracton"></div>
+  <div class="src">Older market: any Gazetteer market place whose first recorded market is earlier, straight-line distance between grid references.</div>
+</div>
+
+<h2><span class="n">05 · Who won</span>What predicted success?</h2>
+<p>Taking each feature one at a time, the best predictors of a market place being a town today were being a borough ({{single.borough.town_yes|pct0}} are towns, against {{single.borough.town_no|pct0}} of the rest), having had a mint ({{single.mint.town_yes|pct0}} against {{single.mint.town_no|pct0}}), sitting on a major river ({{single.river.town_yes|pct0}} against {{single.river.town_no|pct0}}) or a Roman road ({{single.roman.town_yes|pct0}} against {{single.roman.town_no|pct0}}), and not being squeezed in beside an older market.</p>
+<div class="figure">
+  <div class="fig-h">Share that are towns today, with and without each feature</div>
+  <div class="fig-sub">Filled dot: places with the feature. Open dot: places without it.</div>
+  <div class="chart" id="single"></div>
+</div>
+<p>Many of these features go together: boroughs were often old, on rivers and on Roman roads. So I put them in one logistic regression for all {{model_all.n|int}} placed market places. Being a borough multiplies the odds of being a town today by {{or_all.borough.odds_ratio|f1}}, a mint by {{or_all.mint.odds_ratio|f1}}, a market by custom by {{or_all.presc.odds_ratio|f1}}, a fair by {{or_all.fair.odds_ratio|f1}}, a major river within 1 km by {{or_all.on_river.odds_ratio|f1}} and a Roman road by {{or_all.on_roman.odds_ratio|f1}}. An older market within {{spacing.bracton_km|km1}} km roughly halves the odds (odds ratio {{or_all.bracton.odds_ratio|f2}}). Once all that is known, the date of the grant adds little.</p>
+<div class="figure">
+  <div class="fig-h">Odds ratios for being a town today</div>
+  <div class="fig-sub">Logistic regression, {{model_all.n|int}} market places (pseudo R² {{model_all.pseudo_r2|f2}}). Dot: odds ratio; line: 95% interval; log scale. Right of 1: more likely to be a town.</div>
+  <div class="chart" id="forest"></div>
+</div>
+<p>What about size in 1086? For the {{domesday.n|int}} market places I could match to a Domesday place with a household count, the biggest Domesday villages did best: {{domesday_bands.4.town_share|pct0}} of places with 100 or more households are towns today, against {{domesday_bands.0.town_share|pct0}} of those with fewer than 20. But below 100 households size made little difference, and once borough status and the rest are in the model, Domesday households add almost nothing (odds ratio {{model_domesday.hh_double_or|f2}} per doubling). Domesday size mattered mainly because the big Domesday places were already boroughs.</p>
+
+<h2><span class="n">06 · The midpoint</span>Market towns around 1600</h2>
+<p>Alan Everitt's list of market towns around 1500 to 1640, which the Gazetteer flags, gives a halfway check. Of the {{counts.market_places|int}} medieval market places, {{everitt.n|int}} ({{everitt.share_of_markets|pct0}}) were still market towns around 1600. The sorting had mostly happened by then.</p>
+<div class="flow">
+  <div><b>{{counts.market_places|int}}</b>medieval market places</div>
+  <div><b style="color:var(--wax)">{{everitt.n|int}}</b>still market towns c.1600: {{everitt.town_share|pct0}} of them are towns today</div>
+  <div><b style="color:var(--ham)">{{everitt.not_n|int}}</b>not on the c.1600 list: only {{everitt.not_town_share|pct0}} are towns today</div>
+</div>
+<p>Being on Everitt's list is the single strongest predictor I found: {{everitt.town_share|pct0}} of the c.1600 market towns are towns now. Most medieval markets that had not made it by 1600 never did. Still, {{everitt.fell_n|int}} of the c.1600 market towns are villages, hamlets or gone today, among them Lavenham in Suffolk, Castle Combe in Wiltshire and Dunwich. They lost their place at some point in the four centuries since.</p>
+
+<h2><span class="n">07 · The failures</span>Boroughs that came to nothing</h2>
+<p>The saddest category is the borough, a place whose lord gave it a charter of urban privileges, that is now a hamlet or nothing at all. I count {{failed_boroughs_n|int}}:</p>
+<ul class="chips" id="fails2"></ul>
+<p>Some were destroyed by the sea: Ravenserodd on the Humber and Old Winchelsea on the Sussex coast. Old Sarum lost its people to New Salisbury in the thirteenth century. Several Welsh ones, like Castell y Bere, Dinefwr and Dryslwyn, were small boroughs beside castles. A further {{boroughs_village|int}} boroughs are villages today, including Mitchell and Bossiney in Cornwall and Torksey on the Trent, where Domesday Book counts {{examples.Torksey.hh|int}} households and the parish has {{examples.Torksey.pop|int}} residents today.</p>
+<div class="figure">
+  <div class="fig-h">The {{gone_n|int}} market places that have gone from the map</div>
+  <div class="fig-sub">Name not found in OS Open Names near the grid reference, and no town within 1.5 km. Tap a row to see it on the map.</div>
+  <div class="tablewrap"><table class="t" id="goneT"></table></div>
+</div>
+
+<h2><span class="n">08 · Counties</span>Where markets became towns</h2>
+<p>In {{county_extremes.bottom.2.county|raw}} only {{county_extremes.bottom.2.town_share|pct0}} of medieval market places are towns today, and in {{county_extremes.bottom.1.county|raw}}, with {{county_extremes.bottom.1.n|int}} market places, just {{county_extremes.bottom.1.town_share|pct0}}. East Anglia had a dense web of small chartered markets (the median Norfolk market place had another within {{county_nn.Norfolk|km1}} km), most of which stayed villages. In the north and west, where markets were fewer and often further apart (a median of {{county_nn.Cheshire|km1}} km in Cheshire, {{county_nn.Cumberland|km1}} km in Cumberland and {{county_nn.Wales|km1}} km in Wales), a much larger share became towns: {{county_extremes.top.1.town_share|pct0}} in {{county_extremes.top.1.county|raw}}, {{county_extremes.top.2.town_share|pct0}} in {{county_extremes.top.2.county|raw}} and {{outcomes_wales.town.share|pct0}} in Wales. Tap a column heading to sort.</p>
+<div class="figure">
+  <div class="tablewrap"><table class="t" id="countyT"></table></div>
+  <div class="src">Pre-1974 counties as used by the Gazetteer; Wales as one unit. Town: OS City or Town today.</div>
+</div>
+
+<h2><span class="n">09 · Limits</span>What this can and cannot show</h2>
+<p><b>A charter is not a market.</b> The Gazetteer records grants and other evidence; it cannot tell us whether every granted market was ever held, or for how long. I use the first year with evidence, which for prescriptive markets is the first time a market is mentioned, not when it began.</p>
+<p><b>"Town" is Ordnance Survey's word.</b> OS Open Names classes places as City, Town, Village, Hamlet, Other Settlement or Suburban Area. These labels are a modern cartographic judgement, not a legal status, and they are imperfect: Upton upon Severn and Lavenham are "villages", and some sizeable places are listed as "Other Settlement". I used built-up area populations from Census 2021 to catch districts of big towns and sizeable hamlet-type entries.</p>
+<p><b>Matching names is fallible.</b> {{counts.exact_name|int}} places matched an OS name exactly, {{counts.similar_name|int}} by a similar spelling or word order, and {{counts.nearest_only|int}} only by the nearest settlement; {{counts.no_place|int}} have no settlement within 1.5 km. {{counts.grid_fixed|int}} grid references were corrected where the printed reference was clearly mistyped. The median distance between a grid reference and the OS point of the same name is {{counts.median_offset_m|int}} m.</p>
+<p><b>Associations, not causes.</b> Boroughs, rivers and Roman roads all go together with age and lordship. The regression separates them only as far as these crude measures allow. Domesday households could be matched for only {{domesday.n|int}} places, and Domesday did not survey the far north.</p>
+
+<div class="note" id="method">
+  <h3>How I did this</h3>
+  <p><b>Markets.</b> I parsed the county pages of Samantha Letters's Online Gazetteer of Markets and Fairs in England and Wales to 1516: {{counts.places|int}} place entries, {{counts.markets|int}} markets and {{counts.fairs|int}} fairs. For each place I kept only derived variables: its grid reference converted to latitude and longitude, the number and kind of markets and fairs, the first year with evidence of each kind, and flags for borough, mint, a market town c.1600 in Everitt's list and a fair in Harrison's list of 1587. The Gazetteer's grid references are two four-digit numbers in hectometres on the National Grid; I converted them with pyproj and checked the result on {{grid_checks.n|words}} well-known places, which all land within {{grid_checks.max_offset_m|int}} m of the OS point for the town of that name.</p>
+  <p><b>Today.</b> OS Open Names populated places, matched by name within 4 km of the grid reference (letters only, ignoring case and punctuation, with similar spellings and word order accepted within 3 km). Census 2021 populations of 2022 built-up areas of the same name come from ONS small-area data. Domesday households come from the Hull Domesday Project data prepared for my Domesday Destiny study, matched by name within 4 km.</p>
+  <p><b>Geography.</b> Major rivers: OS Open Rivers watercourses whose named course is at least 40 km long. Roman roads: the Itiner-e reconstruction (conjectured roads only). Coast: Natural Earth. Odds ratios come from a logistic regression; one-at-a-time comparisons use Fisher's exact test.</p>
+</div>
+<div class="cta">
+  <a class="p" href="https://github.com/Tristan-Hotham/medieval-markets">Data and code</a>
+  <a href="https://doi.org/10.5281/zenodo.23727144">Paper (Zenodo)</a>
+  <a href="https://tristan-hotham.github.io/saxon-mints/">Minted: the mint towns</a>
+  <a href="https://tristan-hotham.github.io/domesday-destiny/">Is Domesday destiny?</a>
+  <a href="https://blog.tristanhotham.com/">More history data posts</a>
+</div>
+
+<footer>
+  <p>Dr Tristan Hotham, researcher on social media, campaigns and politics. Independent researcher. ORCID <a href="https://orcid.org/0000-0003-4931-9349">0000-0003-4931-9349</a>.</p>
+  <p>Cite as: Hotham, T. (2026) Market towns that failed: what became of the medieval market places of England and Wales. Zenodo. <a href="https://doi.org/10.5281/zenodo.23727144">https://doi.org/10.5281/zenodo.23727144</a></p>
+  <p><b>Markets and fairs:</b> {{GAZ_CREDIT}} Now hosted at <a href="https://archives.history.ac.uk/gazetteer/">archives.history.ac.uk/gazetteer</a> (Centre for Metropolitan History, Institute of Historical Research). The information in the Gazetteer is copyright; this page and its data use only derived variables (counts, years, kinds of evidence, flags and converted coordinates), not the Gazetteer's text.</p>
+  <p>Places: OS Open Names, Ordnance Survey, Open Government Licence v3.0; OS Open Rivers, Open Government Licence v3.0. Contains OS data © Crown copyright and database right 2026. Census 2021 and ONS geography: Office for National Statistics, Open Government Licence v3.0. Domesday: Hull Domesday Project, Professor J.J.N. Palmer, George Slater and the University of Hull (CC BY-NC-SA). Roman roads: Itiner-e (CC BY 4.0). Coastline: Natural Earth (public domain). Bracton: Bracton on the Laws and Customs of England, translated by S.E. Thorne, vol. 3, p. 198 (Ames Foundation, Harvard Law School Library). Base map tiles © Esri. Map library: Leaflet.</p>
+  <p>The derived data and text on this page are released under CC BY-NC-SA 4.0, because they include Hull Domesday Project figures; please also acknowledge the Gazetteer as above. Code is MIT.</p>
+  <p>I wrote the text, with drafting and editing assistance from Claude (Anthropic), which also helped prepare the analysis code. I reviewed and checked all text and results.</p>
+</footer>
+</div>
+<div class="tip" id="tip"></div>
+<button class="btn theme" id="theme" aria-label="Toggle dark mode">◐</button>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+/*DATA*/
+const NS = "http://www.w3.org/2000/svg";
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const el = (t, a = {}, p) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
+const fmt = n => n == null ? "" : Math.round(n).toLocaleString("en-GB");
+const pc = (x, d = 0) => (x * 100).toFixed(d) + "%";
+const tip = document.getElementById("tip");
+function showTip(h, x, y) { tip.innerHTML = h; tip.style.display = "block"; const w = tip.offsetWidth; x = Math.max(w / 2 + 8, Math.min(innerWidth - w / 2 - 8, x)); tip.style.left = x + scrollX + "px"; tip.style.top = y + scrollY + "px"; }
+function hideTip() { tip.style.display = "none"; }
+function hover(node, h) { node.style.cursor = "pointer"; node.setAttribute("tabindex", "0"); const s = () => { const r = node.getBoundingClientRect(); showTip(h, r.left + r.width / 2, r.top); }; node.addEventListener("pointerenter", s); node.addEventListener("focus", s); node.addEventListener("pointerleave", hideTip); node.addEventListener("blur", hideTip); node.addEventListener("click", e => { e.stopPropagation(); s(); }); }
+document.addEventListener("click", hideTip);
+const redraws = [];
+function resp(box, render) { let last = 0; const go = (force) => { const w = Math.max(280, Math.round(box.clientWidth)); if (!force && Math.abs(w - last) < 4) return; last = w; box.innerHTML = ""; render(w, w < 560); }; new ResizeObserver(() => go()).observe(box); redraws.push(() => go(true)); go(); }
+const lbl = (svg, x, y, s, cls = "lab", anchor = "start") => { const t = el("text", { x, y, class: cls, "text-anchor": anchor }, svg); t.textContent = s; return t; };
+const R = D.R, P = D.P, C = P.cols, ROWS = P.rows.map(r => Object.fromEntries(C.map((c, i) => [c, r[i]])));
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const isDark = () => { const r = document.documentElement; return r.dataset.theme ? r.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; };
+document.getElementById("theme").onclick = () => { const r = document.documentElement; const dark = isDark(); r.dataset.theme = dark ? "light" : "dark"; redraws.forEach(f => f()); window.__restyle && window.__restyle(); };
+const OUT = ["town", "absorbed", "village", "hamlet", "gone"];
+const OLAB = ["Town or city", "Swallowed by a town", "Village", "Hamlet", "Gone from the map"];
+const OVAR = ["--wax", "--abs", "--vil", "--ham", "--gone"];
+const KIND = ["market by custom", "granted market", "fair only"];
+
+/* hero mark: a red wax seal with a castle-and-cross device */
+(() => { const g = document.getElementById("heroMark");
+  const blob = []; for (let i = 0; i < 28; i++) { const a = i / 28 * Math.PI * 2, r = 82 + (i % 3 === 0 ? 7 : i % 2 ? -3 : 3); blob.push(`${(Math.cos(a) * r).toFixed(1)},${(Math.sin(a) * r).toFixed(1)}`); }
+  el("polygon", { points: blob.join(" "), fill: "var(--wax)" }, g);
+  el("circle", { r: 64, fill: "none", stroke: "var(--bg)", "stroke-width": 2.5, opacity: .55 }, g);
+  el("circle", { r: 56, fill: "none", stroke: "var(--bg)", "stroke-width": 1, opacity: .45, "stroke-dasharray": "2 3" }, g);
+  el("path", { d: "M-26 22V-6h8v-8h8v8h8v-8h8v8h8v-8h8v8h8V22Z M-6 22v-14a6 6 0 0 1 12 0v14Z", fill: "var(--bg)", "fill-rule": "evenodd", opacity: .85 }, g);
+  el("path", { d: "M0 -40V-20M-8 -32H8", stroke: "var(--bg)", "stroke-width": 4, "stroke-linecap": "round", opacity: .85 }, g);
+  const t = el("text", { "font-size": 10.5, "text-anchor": "middle", style: "fill:var(--bg);font-weight:500;letter-spacing:2px;opacity:.85" }, g);
+  const tp = el("textPath", { href: "#arcS", startOffset: "50%" }, t); tp.textContent = "MERCATVM ET FERIAM";
+  el("path", { id: "arcS", d: "M-46 8A46 46 0 1 1 46 8", fill: "none" }, g);
+})();
+
+/* ===== map ===== */
+(() => {
+  const card = document.getElementById("card"), slider = document.getElementById("year");
+  let year = 1516, show = [1, 1, 1, 1, 1], fairOnly = false, sel = null;
+  if (!window.L) document.getElementById("map").innerHTML = '<p style="padding:16px;font:400 13px/1.5 var(--mono)">The map library did not load. The charts below still work.</p>';
+  const map = window.L ? L.map("map", { preferCanvas: true, scrollWheelZoom: false, zoomSnap: .25, minZoom: 4, maxZoom: 13 }).fitBounds([[50.0, -5.4], [55.6, 1.7]]) : null;
+  const CC = {}; const col = v => CC[v] || (CC[v] = css(v));
+  let tiles, lay;
+  const fl = document.getElementById("filters");
+  fl.innerHTML = OUT.map((o, i) => `<button class="btn o" data-i="${i}" aria-pressed="true"><i style="background:var(${OVAR[i]})"></i>${OLAB[i]}</button>`).join("");
+  fl.querySelectorAll("button").forEach(b => b.onclick = () => { const i = +b.dataset.i; show[i] = 1 - show[i]; b.setAttribute("aria-pressed", !!show[i]); draw(); });
+  const vis = r => (r.kind === 2 ? fairOnly : true) && show[r.out] && (r.first == null || r.first <= year || year >= 1516);
+  if (map) {
+    map.attributionControl.setPrefix('<a href="https://leafletjs.com">Leaflet</a>');
+    map.on("focus", () => map.scrollWheelZoom.enable()); map.on("blur", () => map.scrollWheelZoom.disable());
+    const tileUrl = () => `https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/${isDark() ? "World_Dark_Gray_Base" : "World_Light_Gray_Base"}/MapServer/tile/{z}/{y}/{x}`;
+    tiles = L.tileLayer(tileUrl(), { maxZoom: 13, attribution: 'Tiles &copy; Esri · Markets: S. Letters, Gazetteer of Markets and Fairs to 1516 · Places: OS Open Names (OGL)' }).addTo(map);
+    map.createPane("pts"); map.getPane("pts").style.zIndex = 430;
+    const rr = L.canvas({ pane: "pts", padding: .3, tolerance: 4 });
+    lay = L.layerGroup().addTo(map);
+    window.__draw = () => { lay.clearLayers();
+      const order = ROWS.map((r, i) => i).sort((a, b) => [4, 3, 2, 1, 0][ROWS[a].out] - [4, 3, 2, 1, 0][ROWS[b].out]).reverse();
+      order.forEach(i => { const r = ROWS[i]; if (!vis(r)) return; const c = col(OVAR[r.out]), big = r.flags & 1;
+        const zs = map.getZoom() < 6 ? .55 : map.getZoom() < 7 ? .8 : 1; const m = L.circleMarker([r.lat, r.lon], { renderer: rr, radius: ((big ? 4.6 : 3.4) + (r.nm > 1 ? 1 : 0)) * zs, weight: r.out === 4 ? 1.6 : .8, color: r.out === 4 ? c : col("--fg"), opacity: r.out === 4 ? 1 : .55, fillColor: c, fillOpacity: r.out === 4 ? .15 : (r.kind === 2 ? .35 : .9) });
+        m.bindTooltip(`<b>${esc(r.place)}</b> · ${OLAB[r.out].toLowerCase()}${r.first ? " · market from " + r.first : ""}`, { direction: "top" }).on("click", () => showCard(i)).addTo(lay); });
+      if (sel != null) L.circleMarker([ROWS[sel].lat, ROWS[sel].lon], { renderer: rr, radius: 10, weight: 3, color: col("--ink"), fill: false, interactive: false }).addTo(lay);
+    };
+    window.__restyle = () => { for (const k in CC) delete CC[k]; tiles.setUrl(tileUrl()); window.__draw(); };
+    map.on("zoomend", () => window.__draw());
+    matchMedia("(prefers-color-scheme: dark)").addEventListener("change", window.__restyle);
+  }
+  function draw() { const v = ROWS.filter(vis), n = v.filter(r => r.kind !== 2).length, t = v.filter(r => r.kind !== 2 && r.out === 0).length;
+    document.getElementById("yrLab").innerHTML = `${year === 1516 ? "By 1516" : "By " + year} <small>${fmt(n)} market places on record · ${fmt(t)} of them towns today${fairOnly ? " · plus fair-only places (pale)" : ""}</small>`;
+    legend(); if (map) window.__draw(); }
+  function legend() { document.getElementById("legend").innerHTML = OUT.map((o, i) => `<span><i style="background:var(${OVAR[i]})${i === 4 ? ";opacity:.4;outline:1.5px solid var(--gone)" : ""}"></i>${OLAB[i]}</span>`).join("") + `<span>Bigger dot: borough</span>`; }
+  function showCard(i) { sel = i; const r = ROWS[i]; card.className = "card"; card.style.borderLeftColor = `var(${OVAR[r.out]})`;
+    const flags = [r.flags & 1 ? "borough" : null, r.flags & 2 ? "mint" : null, r.flags & 4 ? "market town c.1600 (Everitt)" : null].filter(Boolean);
+    card.innerHTML = `<b class="t">${esc(r.place)}</b><div style="color:var(--muted)">${esc(r.county)}</div>` +
+      `<div style="margin:8px 0 2px"><span class="pill" style="background:var(${OVAR[r.out]})">${OLAB[r.out]}</span>${flags.map(f => `<span class="pill" style="background:var(--muted)">${f}</span>`).join("")}</div><dl>` +
+      `<dt>First market</dt><dd>${r.first ? r.first + " (" + KIND[r.kind] + ")" : KIND[r.kind] + (r.kind === 2 ? "" : ", no year")}</dd>` +
+      `<dt>Markets</dt><dd>${r.nm} recorded to 1516</dd><dt>Fairs</dt><dd>${r.nf}</dd>` +
+      (r.hh != null ? `<dt>Domesday</dt><dd>${fmt(r.hh)} households (1086)</dd>` : "") +
+      `<dt>Today</dt><dd style="color:var(${OVAR[r.out]});font-weight:500">${r.os ? esc(r.os) + (r.ostype ? " (OS: " + esc(r.ostype) + ")" : "") : "no named settlement within 1.5 km"}</dd>` +
+      (r.pop != null ? `<dt>2021</dt><dd>${fmt(r.pop)} residents (${r.popsrc === 1 ? "built-up area" : "civil parish"})</dd>` : "") + `</dl>`;
+    if (map) window.__draw(); }
+  window.__show = (i, zoom = true) => { showCard(i); if (map && zoom) map.flyTo([ROWS[i].lat, ROWS[i].lon], 10, { duration: reduce ? 0 : .7 }); document.getElementById("map").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" }); };
+  slider.oninput = e => { year = +e.target.value; draw(); };
+  let timer = null; const play = document.getElementById("play");
+  play.onclick = () => { if (timer) { clearInterval(timer); timer = null; play.textContent = "▶"; return; } if (year >= 1516) year = 1066; play.textContent = "❚❚";
+    timer = setInterval(() => { year = Math.min(1516, year + 5); slider.value = year; draw(); if (year >= 1516) { clearInterval(timer); timer = null; play.textContent = "▶"; } }, reduce ? 600 : 120); };
+  document.getElementById("bFair").onclick = e => { fairOnly = !fairOnly; e.target.setAttribute("aria-pressed", fairOnly); draw(); };
+  const dl = document.getElementById("names"), key = r => `${r.place}, ${r.county}`;
+  dl.innerHTML = ROWS.map(r => `<option value="${esc(key(r))}">`).join("");
+  const find = () => { const q = document.getElementById("q").value.trim().toLowerCase(); if (!q) return; let i = ROWS.findIndex(r => key(r).toLowerCase() === q); if (i < 0) i = ROWS.findIndex(r => r.place.toLowerCase() === q); if (i < 0) i = ROWS.findIndex(r => r.place.toLowerCase().startsWith(q)); if (i >= 0) { year = 1516; slider.value = 1516; draw(); window.__show(i); } };
+  document.getElementById("go").onclick = find; document.getElementById("q").addEventListener("keydown", e => { if (e.key === "Enter") find(); });
+  const idx = (p, c) => ROWS.findIndex(r => r.place === p && r.county === c);
+  const chips = R.failed_boroughs.map(f => `<li data-i="${idx(f.place, f.county)}"><b>${esc(f.place)}</b> · ${esc(f.county)} · ${f.outcome === "gone" ? "gone" : "hamlet"}</li>`).join("");
+  ["fails", "fails2"].forEach(id => { const u = document.getElementById(id); u.innerHTML = chips; u.querySelectorAll("li").forEach(li => li.onclick = () => window.__show(+li.dataset.i)); });
+  draw();
+})();
+
+/* ===== grants per decade ===== */
+resp(document.getElementById("decades"), (W, nar) => {
+  const V = R.decades, m = { l: 40, r: 10, t: 16, b: 34 }, Ht = nar ? 260 : 300, svg = el("svg", { viewBox: `0 0 ${W} ${Ht}`, role: "img", "aria-label": "Market and fair grants per decade, 1060s to 1510s" }, document.getElementById("decades"));
+  const mx = 320, bw = (W - m.l - m.r) / V.length, Y = v => Ht - m.b - v / mx * (Ht - m.t - m.b);
+  [0, 100, 200, 300].forEach(t => { el("line", { x1: m.l, x2: W - m.r, y1: Y(t), y2: Y(t), stroke: "var(--rule)" }, svg); lbl(svg, m.l - 6, Y(t) + 4, t, "lab m s", "end"); });
+  V.forEach((d, i) => { const x = m.l + i * bw;
+    el("rect", { x: x + bw * .08, y: Y(d.fair_grants), width: bw * .84, height: Y(0) - Y(d.fair_grants), fill: "var(--waxl)", opacity: .45 }, svg);
+    const b = el("rect", { x: x + bw * .22, y: Y(d.market_grants), width: bw * .56, height: Y(0) - Y(d.market_grants), fill: "var(--wax)" }, svg);
+    const hit = el("rect", { x, y: m.t, width: bw, height: Ht - m.t - m.b, fill: "transparent" }, svg);
+    hover(hit, `<b>${d.decade}s</b><br>${d.market_grants} market grants · ${d.fair_grants} fair grants<br>${d.new_places} places got their first market, ${d.new_places_town} of them towns today`);
+    if (d.decade % 50 === 0) lbl(svg, x + bw / 2, Ht - m.b + 15, d.decade, "lab s m", "middle"); });
+  const xb = m.l + (1348 - 1060) / 10 * bw;
+  el("line", { x1: xb, x2: xb, y1: m.t, y2: Ht - m.b, stroke: "var(--fg)", "stroke-dasharray": "4 3" }, svg);
+  lbl(svg, xb + 5, m.t + 10, "Black Death, 1348", "lab s b");
+  const pk = V.reduce((a, b) => b.market_grants > a.market_grants ? b : a); const xp = m.l + (pk.decade - 1060) / 10 * bw + bw / 2;
+  lbl(svg, xp - 6, Y(pk.market_grants) - 6, `${pk.decade}s: ${pk.market_grants}`, "lab s b", "end");
+  lbl(svg, m.l, 10, "grants per decade", "lab m s");
+});
+
+/* ===== outcome bar ===== */
+resp(document.getElementById("outBar"), (W, nar) => {
+  const Ht = nar ? 180 : 150, svg = el("svg", { viewBox: `0 0 ${W} ${Ht}`, role: "img", "aria-label": "Outcome today of the medieval market places" }, document.getElementById("outBar"));
+  let x = 0; const tot = R.counts.market_places;
+  OUT.forEach((o, i) => { const v = R.outcomes[o], w = v.n / tot * W;
+    const r = el("rect", { x, y: 8, width: Math.max(w - 2, 1), height: 46, fill: `var(${OVAR[i]})`, opacity: i === 4 ? .55 : 1 }, svg);
+    hover(r, `<b>${OLAB[i]}</b><br>${fmt(v.n)} places (${pc(v.share)})`);
+    if (w > 46) lbl(svg, x + 6, 37, pc(v.share), "lab b").setAttribute("style", "fill:#fff");
+    const per = nar ? 2 : 3, row = Math.floor(i / per), col = i % per, cw = W / per;
+    el("rect", { x: col * cw, y: 70 + row * 34, width: 10, height: 10, fill: `var(${OVAR[i]})` }, svg);
+    lbl(svg, col * cw + 15, 79 + row * 34, `${OLAB[i]}`, "lab s");
+    lbl(svg, col * cw + 15, 93 + row * 34, `${fmt(v.n)}`, "lab s m");
+    x += w; });
+});
+
+/* ===== by period ===== */
+resp(document.getElementById("period"), (W, nar) => {
+  const V = R.by_period, m = { l: nar ? 112 : 150, r: 70, t: 4, b: 26 }, rowH = 30, Ht = V.length * rowH + m.t + m.b;
+  const svg = el("svg", { viewBox: `0 0 ${W} ${Ht}`, role: "img", "aria-label": "Share of market places that are towns today by when their market began" }, document.getElementById("period")), X = v => m.l + v / .6 * (W - m.l - m.r);
+  [0, .2, .4, .6].forEach(t => { el("line", { x1: X(t), x2: X(t), y1: m.t, y2: Ht - m.b, stroke: "var(--rule)" }, svg); lbl(svg, X(t), Ht - 8, pc(t), "lab m s", "middle"); });
+  V.forEach((p, i) => { const y = m.t + i * rowH; lbl(svg, m.l - 8, y + 19, p.key === "prescriptive" ? "by custom" : "grant " + p.key, "lab s", "end");
+    const b = el("rect", { x: X(0), y: y + 6, width: X(p.town_share) - X(0), height: rowH - 12, fill: p.key === "prescriptive" ? "var(--ink)" : "var(--wax)" }, svg);
+    hover(b, `<b>${p.key === "prescriptive" ? "Market by custom" : "First market granted " + p.key}</b><br>${p.n} places · ${p.town} towns today (${pc(p.town_share)})`);
+    lbl(svg, X(p.town_share) + 6, y + 19, `${pc(p.town_share)} of ${fmt(p.n)}`, "lab s b"); });
+});
+
+/* ===== Bracton bands ===== */
+resp(document.getElementById("bracton"), (W, nar) => {
+  const V = R.spacing.bands, m = { l: 40, r: 10, t: 26, b: 44 }, Ht = 270, svg = el("svg", { viewBox: `0 0 ${W} ${Ht}`, role: "img", "aria-label": "Share of granted market places that are towns today by distance to the nearest older market" }, document.getElementById("bracton"));
+  const bw = (W - m.l - m.r) / V.length, Y = v => Ht - m.b - v / .5 * (Ht - m.t - m.b);
+  [0, .1, .2, .3, .4, .5].forEach(t => { el("line", { x1: m.l, x2: W - m.r, y1: Y(t), y2: Y(t), stroke: "var(--rule)" }, svg); lbl(svg, m.l - 6, Y(t) + 4, pc(t), "lab m s", "end"); });
+  V.forEach((b, i) => { const x = m.l + i * bw, close = i < 4;
+    const r = el("rect", { x: x + 4, y: Y(b.town_share), width: bw - 8, height: Y(0) - Y(b.town_share), fill: close ? "var(--waxl)" : "var(--wax)" }, svg);
+    hover(r, `<b>${b.band} km</b> from the nearest older market<br>${b.n} places · ${pc(b.town_share)} towns today`);
+    lbl(svg, x + bw / 2, Y(b.town_share) - 5, b.n, "lab s m", "middle");
+    lbl(svg, x + bw / 2, Ht - m.b + 15, nar ? ["<2.5", "<5", "<7.5", "<10.7", "<15", "<20", "20+"][i] : b.band, "lab s", "middle"); });
+  const xb = m.l + 4 * bw; el("line", { x1: xb, x2: xb, y1: m.t - 14, y2: Ht - m.b, stroke: "var(--fg)", "stroke-dasharray": "4 3" }, svg);
+  lbl(svg, xb + 5, m.t - 4, "Bracton: 6 2/3 miles", "lab s b");
+  lbl(svg, (W + m.l) / 2, Ht - 8, nar ? "km to the nearest older market (band upper limit)" : "km to the nearest older market", "lab m s", "middle");
+});
+
+/* ===== single predictors ===== */
+resp(document.getElementById("single"), (W, nar) => {
+  const K = ["everitt", "mint", "borough", "prescriptive", "river", "multi", "roman", "coast", "fair", "bracton"], V = K.map(k => R.single[k]);
+  const m = { l: nar ? 128 : 250, r: 16, t: 6, b: 28 }, rowH = 30, Ht = V.length * rowH + m.t + m.b;
+  const svg = el("svg", { viewBox: `0 0 ${W} ${Ht}`, role: "img", "aria-label": "Town share with and without each feature" }, document.getElementById("single")), X = v => m.l + v * (W - m.l - m.r);
+  [0, .25, .5, .75, 1].forEach(t => { el("line", { x1: X(t), x2: X(t), y1: m.t, y2: Ht - m.b, stroke: "var(--rule)" }, svg); lbl(svg, X(t), Ht - 8, pc(t), "lab m s", "middle"); });
+  V.forEach((v, i) => { const y = m.t + i * rowH + rowH / 2; const SH = { everitt: "c.1600 town", mint: "Mint", borough: "Borough", prescriptive: "By custom", river: "Major river", multi: "2+ markets", roman: "Roman road", coast: "Coast", fair: "Fair", bracton: "Older mkt <10.7km" }; const name = nar ? SH[K[i]] : v.name;
+    lbl(svg, m.l - 10, y + 4, name, "lab s", "end");
+    el("line", { x1: X(v.town_no), x2: X(v.town_yes), y1: y, y2: y, stroke: "var(--muted)", "stroke-width": 2 }, svg);
+    el("circle", { cx: X(v.town_no), cy: y, r: 5.5, fill: "var(--bg)", stroke: "var(--wax)", "stroke-width": 2 }, svg);
+    const c = el("circle", { cx: X(v.town_yes), cy: y, r: 6.5, fill: "var(--wax)" }, svg);
+    hover(c, `<b>${esc(v.name)}</b><br>with: ${pc(v.town_yes)} towns (${fmt(v.n_yes)} places)<br>without: ${pc(v.town_no)} (${fmt(v.n_no)})`); });
+});
+
+/* ===== forest ===== */
+resp(document.getElementById("forest"), (W, nar) => {
+  const V = R.model_all.rows, m = { l: nar ? 150 : 210, r: 16, t: 6, b: 30 }, rowH = 26, Ht = V.length * rowH + m.t + m.b;
+  const svg = el("svg", { viewBox: `0 0 ${W} ${Ht}`, role: "img", "aria-label": "Odds ratios from the logistic regression" }, document.getElementById("forest"));
+  const lo = Math.log(.25), hi = Math.log(8), X = v => m.l + (Math.log(v) - lo) / (hi - lo) * (W - m.l - m.r);
+  [.25, .5, 1, 2, 4, 8].forEach(t => { el("line", { x1: X(t), x2: X(t), y1: m.t, y2: Ht - m.b, stroke: t === 1 ? "var(--fg)" : "var(--rule)" }, svg); lbl(svg, X(t), Ht - 10, t, "lab m s", "middle"); });
+  V.forEach((v, i) => { const y = m.t + i * rowH + rowH / 2, sig = v.lo > 1 || v.hi < 1;
+    lbl(svg, m.l - 10, y + 4, nar ? v.label.replace("Older market within 10.7 km", "Older market < 10.7 km").replace("First granted 1349 or later", "Granted 1349+").replace("Major river within 1 km", "Major river").replace("Roman road within 1 km", "Roman road") : v.label, "lab s", "end");
+    el("line", { x1: X(Math.max(v.lo, .25)), x2: X(Math.min(v.hi, 8)), y1: y, y2: y, stroke: sig ? "var(--wax)" : "var(--muted)", "stroke-width": 2 }, svg);
+    const c = el("circle", { cx: X(v.odds_ratio), cy: y, r: 5.5, fill: sig ? "var(--wax)" : "var(--bg)", stroke: sig ? "var(--wax)" : "var(--muted)", "stroke-width": 2 }, svg);
+    hover(c, `<b>${esc(v.label)}</b><br>odds ratio ${v.odds_ratio.toFixed(2)} (${v.lo.toFixed(2)} to ${v.hi.toFixed(2)})`); });
+});
+
+/* ===== gone table ===== */
+(() => { const t = document.getElementById("goneT");
+  t.innerHTML = `<thead><tr><th>Place</th><th>County</th><th class="num">First market</th><th>Borough</th><th>Nearest place today</th></tr></thead><tbody>` +
+    R.gone_examples.map(g => { const i = ROWS.findIndex(r => r.place === g.place && r.county === g.county); return `<tr data-i="${i}" style="cursor:pointer"><td>${esc(g.place)}</td><td>${esc(g.county)}</td><td class="num">${g.first ?? ""}</td><td>${g.borough ? "yes" : ""}</td><td>${g.os_name && g.os_type !== "None within 1.5 km" ? esc(g.os_name) : "none within 1.5 km"}</td></tr>`; }).join("") + "</tbody>";
+  t.querySelectorAll("tbody tr").forEach(tr => tr.onclick = () => window.__show(+tr.dataset.i));
+})();
+
+/* ===== county table (sortable) ===== */
+(() => { const t = document.getElementById("countyT"); let key = "town_share", dir = -1;
+  const cols = [["county", "County"], ["n", "Market places", 1], ["town", "Towns today", 1], ["town_share", "Share towns", 1], ["everitt", "Market towns c.1600", 1]];
+  const rows = D.R.counties || [];
+  const go = () => { const V = [...rows].sort((a, b) => (a[key] > b[key] ? 1 : a[key] < b[key] ? -1 : 0) * dir);
+    t.innerHTML = `<thead><tr>${cols.map(([k, l, n]) => `<th class="${n ? "num" : ""}" data-k="${k}">${l}${k === key ? (dir < 0 ? " ▼" : " ▲") : ""}</th>`).join("")}</tr></thead><tbody>` +
+      V.map(c => `<tr><td>${esc(c.county)}</td><td class="num">${c.n}</td><td class="num">${c.town}</td><td class="num">${pc(c.town_share)}</td><td class="num">${c.everitt}</td></tr>`).join("") + "</tbody>";
+    t.querySelectorAll("th").forEach(th => th.onclick = () => { const k = th.dataset.k; dir = k === key ? -dir : (k === "county" ? 1 : -1); key = k; go(); }); };
+  go();
+})();
+</script>
+</body>
+</html>
